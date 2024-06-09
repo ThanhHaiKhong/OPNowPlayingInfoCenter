@@ -56,7 +56,7 @@ public class OPNowPlayingInfoCenter: NSObject {
 
 public extension OPNowPlayingInfoCenter {
     
-    func handleNowPlayableConfiguration(commands: [RemoteCommand] = RemoteCommand.defaultDisabledCommands,
+    func configureNowPlaying(commands: [RemoteCommand] = RemoteCommand.defaultRegisteredCommands,
                                         disabledCommands: [RemoteCommand] = RemoteCommand.defaultDisabledCommands,
                                         commandHandler: @escaping RemoteCommandResult,
                                         interruptionHandler: @escaping InterruptionResult) throws {
@@ -68,7 +68,7 @@ public extension OPNowPlayingInfoCenter {
                                     commandHandler: commandHandler)
     }
     
-    func handleNowPlayableSessionStart() throws {
+    func configureNowPlayingAudioSessionBegin() throws {
         let audioSession = AVAudioSession.sharedInstance()
         
         interruptionObserver = NotificationCenter.default.addObserver(forName: AVAudioSession.interruptionNotification,
@@ -81,7 +81,7 @@ public extension OPNowPlayingInfoCenter {
         try audioSession.setActive(true)
     }
     
-    func handleNowPlayableSessionEnd() {
+    func configureNowPlayingAudioSessionEnd() {
         // Stop observing interruptions to the audio session.
         interruptionObserver = nil
         
@@ -120,9 +120,10 @@ public extension OPNowPlayingInfoCenter {
         nowPlayingInfoCenter.nowPlayingInfo = nowPlayingInfo
     }
     
-    func updateNowPlaying(artwork: UIImage) {
+    func updateNowPlaying(assetURL: URL, artwork: UIImage) {
         let nowPlayingInfoCenter = MPNowPlayingInfoCenter.default()
         var nowPlayingInfo = nowPlayingInfoCenter.nowPlayingInfo ?? [String: Any]()
+        nowPlayingInfo[MPNowPlayingInfoPropertyAssetURL] = assetURL
         
         let image = MPMediaItemArtwork(boundsSize: artwork.size) { _ in artwork }
         nowPlayingInfo[MPMediaItemPropertyArtwork] = image
@@ -441,18 +442,18 @@ extension OPNowPlayingInfoCenter {
     
     public struct StaticInfo {
         
-        public let assetURL: URL
+        public let assetURL: URL?
         public let mediaType: MPNowPlayingInfoMediaType
         public let isLiveStream: Bool
         
-        public let title: String
+        public let title: String?
         public let artist: String?
         public let artwork: MPMediaItemArtwork?
         
         public let albumArtist: String?
         public let albumTitle: String?
         
-        public init(assetURL: URL,
+        public init(assetURL: URL? = nil,
                     mediaType: MPNowPlayingInfoMediaType,
                     isLiveStream: Bool = false,
                     title: String,
